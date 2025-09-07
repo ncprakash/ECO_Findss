@@ -11,6 +11,7 @@ import Dashboard from './Pages/Dashboard/index.jsx'
 import AddNewProduct from './Pages/Add-productPage/index.jsx'
 import ProductDetailPage from './Pages/ProductDetailPage/index.jsx'
 import CheckoutPage from './Pages/CheckOutPage/index.jsx'
+import Verification from './Pages/VerificationPage/index.jsx'
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
         <Route path='/add-product' element={<AddNewProduct/>} />
         <Route path="/product/:productId" element={<ProductDetailPage />} />
         <Route path='/cart' element={<CheckoutPage/>} />
+        <Route path='/verify' element={<Verification/>} />
       </Routes>
     </>
   )
