@@ -52,7 +52,7 @@ function Verification() {
     setResendDisabled(true);
 
     // Optionally call API to resend OTP
-    axios.post('/resend-otp').catch(() => {
+    axios.post('/api/sendOtp').catch(() => {
       toast.error('Failed to resend OTP');
     });
   };
