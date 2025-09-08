@@ -2,6 +2,7 @@
 import express from "express";
 import pool from "./db.js";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 const router = express.Router();
 
@@ -30,10 +31,22 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    // ✅ If password is correct
+    // ✅ Generate JWT token
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "10h" }
+    );
+
+    // ✅ Return token + user details
     return res.json({
       message: "Login successful",
-      user: { id: user.id, username: user.username, email: user.email },
+      token,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+      },
     });
   } catch (err) {
     console.error("❌ Login error:", err.message);

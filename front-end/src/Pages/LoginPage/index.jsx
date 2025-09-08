@@ -20,7 +20,7 @@ const Login = () => {
 
     try {
       const res = await axios.post("/api/login", formData);
-
+      localStorage.setItem("token", res.data.token);
       toast.success("✅ Login successful!", { id: loadingToast });
       navigate("/dashboard"); // redirect after login
     } catch (err) {
@@ -59,7 +59,7 @@ const Login = () => {
         </form>
         <p className="text-center text-lg mt-2 text-green-600">
           Don’t have an account?{" "}
-          <Link to="/auth/signup" className="text-green-600 font-semibold">
+          <Link to="/signup" className="text-green-600 font-semibold">
             Sign Up
           </Link>
         </p>
