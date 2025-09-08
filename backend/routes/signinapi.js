@@ -1,22 +1,11 @@
 import express from "express";
 import bcrypt from "bcrypt";
-import pool from "./db.js"; // your db module
-import cors from "cors";
+import pool from "./db.js";
 
-const app = express();
-const port = 3000;
+const router = express.Router();
 
-app.use(cors());
-app.use(express.json());
-try{
-  pool.connect()
-  console.log("Database connected succesfully");
-}catch(err){
-  console.log("Database connection erro",err.message);
-}
-
-// Signup route
-app.post("/signup", async (req, res) => {
+// ✅ Signup route
+router.post("/signup", async (req, res) => {
   const {
     username,
     email,
@@ -38,8 +27,12 @@ app.post("/signup", async (req, res) => {
   }
 
   try {
-    // Check if user exists
-    const check = await pool.query("SELECT * FROM users WHERE username = $1 OR email = $2", [username, email]);
+    // Check if user already exists
+    const check = await pool.query(
+      "SELECT * FROM users WHERE username = $1 OR email = $2",
+      [username, email]
+    );
+
     if (check.rows.length > 0) {
       return res.status(409).json({ message: "User already exists" });
     }
@@ -47,7 +40,7 @@ app.post("/signup", async (req, res) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Insert user
+    // Insert into database
     const query = `
       INSERT INTO users(username, email, password_hash, full_name, bio, phone, gender, dob, address, city, state, country, postal_code)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
@@ -72,7 +65,7 @@ app.post("/signup", async (req, res) => {
     const result = await pool.query(query, values);
 
     return res.status(201).json({
-      message: "User created successfully",
+      message: "✅ User created successfully",
       user: result.rows[0],
     });
   } catch (err) {
@@ -81,6 +74,4 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`✅ Server running at http://localhost:${port}`);
-});
+export default router;

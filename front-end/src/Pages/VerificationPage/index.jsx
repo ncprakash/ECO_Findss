@@ -38,7 +38,7 @@ function Verification() {
     const code = otp.join('');
 
     try {
-      const response = await axios.post('/verify', { code });
+      const response = await axios.post('/api/verify', { code });
       toast.success('Verification successful!');
       setTimeout(() => navigate('/dashboard'), 1500);
     } catch (error) {

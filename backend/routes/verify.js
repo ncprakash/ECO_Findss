@@ -1,25 +1,34 @@
-router.post('/verify-otp', (req, res) => {
-    const { email, otp } = req.body;
+import express from "express";
+const router = express.Router();
 
-    if (!email || !otp)
-        return res.status(400).json({ error: 'Email and OTP are required' });
+// Temporary OTP store (in-memory, resets when server restarts)
+const otpStore = {};
 
-    const record = otpStore[email];
+// OTP verification endpoint
+router.post("/verify-otp", (req, res) => {
+  const { email, otp } = req.body;
 
-    if (!record) {
-        return res.status(400).json({ error: 'No OTP sent to this email' });
-    }
+  if (!email || !otp) {
+    return res.status(400).json({ error: "Email and OTP are required" });
+  }
 
-    if (Date.now() > record.expiresAt) {
-        delete otpStore[email];
-        return res.status(400).json({ error: 'OTP expired' });
-    }
+  const record = otpStore[email];
 
-    if (record.otp !== otp) {
-        return res.status(400).json({ error: 'Invalid OTP' });
-    }
+  if (!record) {
+    return res.status(400).json({ error: "No OTP sent to this email" });
+  }
 
-    delete otpStore[email];  // OTP used up
+  if (Date.now() > record.expiresAt) {
+    delete otpStore[email];
+    return res.status(400).json({ error: "OTP expired" });
+  }
 
-    return res.json({ message: 'OTP verified successfully' });
+  if (record.otp !== otp) {
+    return res.status(400).json({ error: "Invalid OTP" });
+  }
+
+  delete otpStore[email]; // OTP used up
+  return res.json({ message: "OTP verified successfully" });
 });
+
+export default router;

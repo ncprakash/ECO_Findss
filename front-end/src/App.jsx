@@ -1,5 +1,6 @@
 
 import './App.css'
+import { Toaster } from "sonner"
 import {Routes,Route} from 'react-router-dom'
 import Login from './Pages/LoginPage/index.jsx'
 import Signup from './Pages/Sigin-inPage/index.jsx'
@@ -29,6 +30,7 @@ function App() {
         <Route path='/cart' element={<CheckoutPage/>} />
         <Route path='/verify' element={<Verification/>} />
       </Routes>
+      <Toaster position="top-right" richColors />
     </>
   )
 }

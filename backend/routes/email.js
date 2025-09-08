@@ -1,10 +1,11 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import nodemailer from 'nodemailer';
+const router= express.Router();
 
 dotenv.config();
-const app = express();
-app.use(express.json());  // Proper middleware
+
+  // Proper middleware
 
 const otpStore = {};  // { email: { otp: '12345', expiresAt: Date } }
 
@@ -12,7 +13,7 @@ function generateOtp() {
     return Math.floor(10000 + Math.random() * 90000).toString();
 }
 
-app.post('/send-otp', async (req, res) => {
+router.post('/send-otp', async (req, res) => {
     const { email } = req.body;
 
     if (!email) return res.status(400).json({ error: 'Email is required' });
@@ -48,6 +49,5 @@ app.post('/send-otp', async (req, res) => {
     }
 });
 
-app.listen(3000, () => {
-    console.log('Your server is listening at port 3000');
-});
+
+ export default router;

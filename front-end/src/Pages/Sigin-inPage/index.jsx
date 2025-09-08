@@ -30,16 +30,24 @@ function Signup() {
   const handleBack = () => setStep(1);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-      const res = await axios.post("http://localhost:3000/signup", formData) .then(function (response) {
-        alert(response);
-        Navigate('/verify')
+    e.preventDefault()
+  
+    const loadingToast = toast.loading("Signing you up...")
+  
+    try {
+      await axios.post("/api/signup", formData)
+  
+      toast.success("✅ Signup successful!", {
+        id: loadingToast, // replaces loading toast
       })
-      .catch(function (error) {
-        alert(error);
-      });
-
-  };
+  
+      navigate("/verify")
+    } catch (error) {
+      toast.error(error.response?.data?.error || "❌ Signup failed", {
+        id: loadingToast,
+      })
+    }
+  }
 
 
   return (
