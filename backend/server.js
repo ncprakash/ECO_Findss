@@ -3,6 +3,7 @@ import cors from "cors";
 import signInApi from "./routes/signinapi.js";
 import verify from './routes/verify.js'
 import sendOtp from './routes/email.js';
+import login from './routes/loginapi.js'
 
 const app = express();
 const port = 3000;
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use("/api", signInApi);
 app.use('/api',verify);
 app.use('/api',sendOtp);
+app.use('/api',login)
 
 // Start server
 app.listen(port, () => {
