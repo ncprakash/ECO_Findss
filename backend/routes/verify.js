@@ -1,34 +1,62 @@
-import express from "express";
+import express from 'express';
+import bcrypt from 'bcrypt';
+import db from './db.js';
+
 const router = express.Router();
 
-// Temporary OTP store (in-memory, resets when server restarts)
-const otpStore = {};
+router.post('/verify-otp', async (req, res) => {
+    const { email, otp, formData } = req.body;
+    if (!email || !otp || !formData)
+        return res.status(400).json({ error: 'Missing fields' });
 
-// OTP verification endpoint
-router.post("/verify-otp", (req, res) => {
-  const { email, otp } = req.body;
+    try {
+        // Fetch OTP record
+        const result = await db.query('SELECT * FROM otp_store WHERE email=$1', [email]);
+        if (result.rows.length === 0)
+            return res.status(400).json({ error: 'No OTP found' });
 
-  if (!email || !otp) {
-    return res.status(400).json({ error: "Email and OTP are required" });
-  }
+        const record = result.rows[0];
 
-  const record = otpStore[email];
+        if (new Date(record.expires_at) < new Date()) {
+            await db.query('DELETE FROM otp_store WHERE email=$1', [email]);
+            return res.status(400).json({ error: 'OTP expired' });
+        }
 
-  if (!record) {
-    return res.status(400).json({ error: "No OTP sent to this email" });
-  }
+        if (record.otp !== otp) return res.status(400).json({ error: 'Invalid OTP' });
 
-  if (Date.now() > record.expiresAt) {
-    delete otpStore[email];
-    return res.status(400).json({ error: "OTP expired" });
-  }
+        // Hash password
+        const hashedPassword = await bcrypt.hash(formData.password, 10);
 
-  if (record.otp !== otp) {
-    return res.status(400).json({ error: "Invalid OTP" });
-  }
+        // Insert user
+        await db.query(
+            `INSERT INTO users 
+            (username, email, password_hash, full_name, bio, phone, gender, dob, address, city, state, country, postal_code)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
+            [
+                formData.username,
+                formData.email,
+                hashedPassword,
+                formData.full_name,
+                formData.bio,
+                formData.phone,
+                formData.gender,
+                formData.dob,
+                formData.address,
+                formData.city,
+                formData.state,
+                formData.country,
+                formData.postal_code,
+            ]
+        );
 
-  delete otpStore[email]; // OTP used up
-  return res.json({ message: "OTP verified successfully" });
+        // Remove OTP after successful verification
+        await db.query('DELETE FROM otp_store WHERE email=$1', [email]);
+
+        res.json({ message: 'OTP verified and user created successfully!' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
 });
 
 export default router;

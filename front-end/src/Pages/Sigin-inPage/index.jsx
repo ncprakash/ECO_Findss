@@ -3,6 +3,8 @@ import axios from "axios";
 import { toast } from "sonner";
 import { Navigate, useNavigate } from "react-router-dom";
 
+
+
 function Signup() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
@@ -30,25 +32,30 @@ function Signup() {
   const handleBack = () => setStep(1);
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-  
-    const loadingToast = toast.loading("Signing you up...")
-  
-    try {
-      await axios.post("/api/signup", formData)
-  
-      toast.success("✅ Signup successful!", {
-        id: loadingToast, // replaces loading toast
-      })
-  
-      navigate("/verify")
-    } catch (error) {
-      toast.error(error.response?.data?.error || "❌ Signup failed", {
-        id: loadingToast,
-      })
-    }
-  }
+    e.preventDefault();
 
+    
+
+    try {
+      localStorage.setItem('signupData', JSON.stringify(formData));
+  
+      await axios.post('/api/send-otp', { email: formData.email }).then(function(response){
+        console.log(response);
+      }).catch(function(error){
+            console.log(error);
+      })
+  
+     
+      navigate(`/verify?email=${encodeURIComponent(formData.email)}`);
+    } catch (err) {
+      console.error('Detailed error:', err);
+      console.error('Response data:', err.response?.data);
+      console.error('Response status:', err.response?.status);
+      console.error('Headers:', err.response?.headers);
+  
+      toast.error(err.response?.data?.error || 'Failed to send OTP');
+  }
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 px-4">

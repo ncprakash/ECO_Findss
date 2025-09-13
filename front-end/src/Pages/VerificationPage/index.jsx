@@ -1,16 +1,23 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast, Toaster } from 'sonner';
-import { useNavigate } from 'react-router-dom';
-
+import { Navigate, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 function Verification() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams(); 
+  const email = searchParams.get('email');
 
   const [otp, setOtp] = useState(['', '', '', '']);
   const [timer, setTimer] = useState(60);
   const [resendDisabled, setResendDisabled] = useState(true);
 
   useEffect(() => {
+    const email=localStorage.getItem('signupData');
+    if(!email){
+      navigate('/signup');
+      return;
+    }
     if (timer > 0) {
       const interval = setInterval(() => setTimer((t) => t - 1), 1000);
       return () => clearInterval(interval);
@@ -33,29 +40,33 @@ function Verification() {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
+    const signupData = JSON.parse(localStorage.getItem('signupData'));
     const code = otp.join('');
-
+  
     try {
-      const response = await axios.post('/api/verify', { code });
-      toast.success('Verification successful!');
-      setTimeout(() => navigate('/dashboard'), 1500);
-    } catch (error) {
-      toast.error('Verification failed. Please try again.');
+      const res = await axios.post('/api/verify-otp', { email, otp: code, formData: signupData });
+      toast.success(res.data.message);
+  
+      localStorage.removeItem('signupData');
+      navigate('/dashboard');
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'OTP verification failed');
     }
   };
+  const handleResend = async () => {
+    try {
+        await axios.post('/api/send-otp', { email });  // Send email again
 
-  const handleResend = () => {
-    toast('OTP resent to your email!');
-    setTimer(60);
-    setResendDisabled(true);
+        toast.success('✅ OTP resent successfully!');
 
-    // Optionally call API to resend OTP
-    axios.post('/api/sendOtp').catch(() => {
-      toast.error('Failed to resend OTP');
-    });
-  };
+        setTimer(60);       // Reset timer
+        setResendDisabled(true);
+    } catch (error) {
+        toast.error(error.response?.data?.error || '❌ Failed to resend OTP.');
+    }
+};
+  
 
   return (
     <div className="flex flex-col items-center mt-20">
