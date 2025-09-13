@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { Edit2 } from "lucide-react";
-
+import { Navigate } from "react-router-dom";
 const Dashboard = () => {
   const [user, setUser] = useState(null);
 
@@ -18,6 +18,7 @@ const Dashboard = () => {
 
         setUser(res.data.user); // ✅ set user object
       } catch (err) {
+        Navigate("/login");
         toast.error("Failed to load profile");
       }
     };

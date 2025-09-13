@@ -5,6 +5,7 @@ import verify from './routes/verify.js'
 import sendOtp from './routes/email.js';
 import login from './routes/loginapi.js'
 import Profile from './routes/users.js';
+import productRoutes from "./routes/products.js";
 
 const app = express();
 const port = 3000;
@@ -19,6 +20,7 @@ app.use('/api',verify);
 app.use('/api',sendOtp);
 app.use('/api',login)
 app.use('/api',Profile);
+app.use("/products", productRoutes);
 
 // Start server
 app.listen(port, () => {
