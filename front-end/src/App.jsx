@@ -9,7 +9,6 @@ import AboutPage from './Pages/AboutPage/index.jsx'
 import ContactPage from './Pages/ContactPage/index.jsx'
 import Dashboard from './Pages/Dashboard/index.jsx'
 import AddNewProduct from './Pages/Add-productPage/index.jsx'
-import CheckoutPage from './Pages/CheckOutPage/index.jsx'
 import Verification from './Pages/VerificationPage/index.jsx';
 import PrivateRoute from './layouts/PrivateRoute.jsx'
 import UserDashboard from './Pages/userDashboard/index.jsx' 
@@ -25,7 +24,6 @@ function App() {
         <Route path='/contact' element={<ContactPage/>} />
         <Route path="/dashboard"element={<PrivateRoute><Dashboard /></PrivateRoute>}/>
         <Route path='/add-product' element={<AddNewProduct/>} />
-        <Route path='/cart' element={<CheckoutPage/>} />
         <Route path='/verify' element={<Verification/>} />
         <Route path='/user-dashboard' element={<UserDashboard/>} />  
       </Routes>

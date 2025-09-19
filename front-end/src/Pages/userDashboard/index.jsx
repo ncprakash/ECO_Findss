@@ -14,7 +14,7 @@ const UserDashboard = () => {
 
     setLoading(true);
     try {
-      const res = await fetch("/api/userDashboard", {
+      const res = await fetch("http://localhost:3000/api/userDashboard", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ user_id: userId }), // user input
@@ -31,8 +31,7 @@ const UserDashboard = () => {
   };
 
   return (
-   
-    <MainLayout>  
+     <MainLayout>
     <div className="min-h-screen bg-gray-100 p-6">
       {/* User input form */}
       <div className="max-w-md mx-auto bg-white shadow-md rounded-xl p-4 mb-6">
