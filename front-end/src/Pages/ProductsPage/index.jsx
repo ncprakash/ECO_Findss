@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 
-const ProductForm = () => {
+const ProductForm= () => {
+
   const [form, setForm] = useState({
     user_id: "",
     image_url: "",
@@ -37,7 +38,7 @@ const ProductForm = () => {
 const handleSubmit = async (e) => {
   e.preventDefault();
   try {
-    const res = await fetch("http://localhost:3000/products", {
+    const res = await fetch("http://localhost:3000/api/products", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
@@ -46,7 +47,7 @@ const handleSubmit = async (e) => {
     if (!res.ok) throw new Error("Failed to create product");
 
     const data = await res.json();
-    alert("✅ Product created added to the list");
+    alert("✅ Product created: " + JSON.stringify(data));
 
     // ✅ Reset form after success
     setForm({
