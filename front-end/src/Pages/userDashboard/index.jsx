@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-
+import MainLayout from '../../layouts/MainLayout';
 const UserDashboard = () => {
   const [userId, setUserId] = useState(""); // input value
   const [user, setUser] = useState(null);
@@ -31,6 +31,8 @@ const UserDashboard = () => {
   };
 
   return (
+   
+    <MainLayout>  
     <div className="min-h-screen bg-gray-100 p-6">
       {/* User input form */}
       <div className="max-w-md mx-auto bg-white shadow-md rounded-xl p-4 mb-6">
@@ -101,7 +103,7 @@ const UserDashboard = () => {
       {!loading && user && products.length === 0 && (
         <p className="text-center text-gray-500">No products found</p>
       )}
-    </div>
+    </div></MainLayout>
   );
 };
 
