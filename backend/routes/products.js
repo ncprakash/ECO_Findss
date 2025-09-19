@@ -3,7 +3,7 @@ import pool from "./db.js";
 
 const router = express.Router();
 
-router.post("/products", async (req, res) => {
+router.post("/", async (req, res) => {
   const {
     user_id,
     image_url,

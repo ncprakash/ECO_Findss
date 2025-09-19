@@ -14,6 +14,7 @@ import ProductDetailPage from './Pages/ProductDetailPage/index.jsx'
 import CheckoutPage from './Pages/CheckOutPage/index.jsx'
 import Verification from './Pages/VerificationPage/index.jsx';
 import PrivateRoute from './layouts/PrivateRoute.jsx'
+import UserDashboard from './Pages/userDashboard/index.jsx' 
 
 function App() {
   return (
@@ -30,7 +31,7 @@ function App() {
         <Route path="/product/:productId" element={<ProductDetailPage />} />
         <Route path='/cart' element={<CheckoutPage/>} />
         <Route path='/verify' element={<Verification/>} />
-
+        <Route path='/user-dashboard' element={<UserDashboard/>} />  
       </Routes>
       
     </>
