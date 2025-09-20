@@ -131,7 +131,7 @@ const UserDashboard = () => {
       </section>
 
       {/* Floating Action Button */}
-      <button className="fixed bottom-24 right-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-600 text-white shadow-lg hover:scale-105 hover:bg-green-700 transition-transform">
+      <button onClick={()=>navigate('/add-product')} className="fixed bottom-24 right-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-600 text-white shadow-lg hover:scale-105 hover:bg-green-700 transition-transform">
         <Plus className="h-8 w-8" />
       </button>
     </div>

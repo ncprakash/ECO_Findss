@@ -23,7 +23,7 @@ export default function ContactPage  ()  {
     <div className="bg-gray-50 min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl w-full bg-white rounded-lg shadow-xl overflow-hidden md:flex">
         {/* Left Side: Contact Info & Theme */}
-        <div className="md:w-1/2 p-8 bg-green-700 text-white flex flex-col justify-between">
+        <div className="md:w-1/2 p-8 bg-green-500 text-white flex flex-col justify-between">
           <div>
             <h2 className="text-3xl font-bold mb-4">Get in Touch</h2>
             <p className="mb-8 opacity-90">

@@ -9,7 +9,7 @@ export default function Navbar() {
   const pages = [
     {name: "Home", path: "/" },
     { name: "Community", path: "/community" },
-    { name: "Add Product", path: "/add-product" },
+  
     { name: "About", path: "/about" },
     { name: "Contact", path: "/contact" },
     

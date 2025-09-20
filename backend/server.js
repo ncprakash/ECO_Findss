@@ -9,6 +9,7 @@ import productRoutes from "./routes/products.js";
 import userDashboard from "./routes/userDashboard.js";
 import cloud from "./routes/cloudinary.js";
 import posts from "./routes/communityPost.js"
+import productDetails from "./routes/productDetail.js"
 const app = express();
 const port = 3000;
 
@@ -26,6 +27,7 @@ app.use("/api", productRoutes);
 app.use("/api",cloud)
 app.use("/api", userDashboard)
 app.use("/api",posts);
+app.use('/api',productDetails)
 
 
 // Start server

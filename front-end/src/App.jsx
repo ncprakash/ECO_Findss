@@ -7,7 +7,7 @@ import Signup from './Pages/Sigin-inPage/index.jsx'
 import LandingPage from './Pages/LandingPage/index.jsx'
 import AboutPage from './Pages/AboutPage/index.jsx'
 import ContactPage from './Pages/ContactPage/index.jsx'
-
+import ProductDetails from './Pages/ProductDetailPage'
 import AddNewProduct from './Pages/Add-productPage/index.jsx'
 import Verification from './Pages/VerificationPage/index.jsx';
 import PrivateRoute from './layouts/PrivateRoute.jsx'
@@ -27,6 +27,8 @@ function App() {
 
         <Route path='/add-product' element={<AddNewProduct/>} />
         <Route path='/verify' element={<Verification/>} />
+        <Route path="/product-details/:id" element={<ProductDetails />} />
+
         <Route path='/user-dashboard' element={<PrivateRoute><UserDashboard/></PrivateRoute>} />  
       </Routes>
       
