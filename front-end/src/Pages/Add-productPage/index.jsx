@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Upload, X, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react';
 import { toast } from "sonner";
 import axios from 'axios';
+import MainLayout from '@/layouts/MainLayout';
 
 const AddNewProduct = () => {
   const [formData, setFormData] = useState({
@@ -117,24 +118,44 @@ const AddNewProduct = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+  
     if (!validateStep(3)) return;
-    
+  
     setIsSubmitting(true);
     const userId = localStorage.getItem("user_id");
-    
+  
     try {
-      // Prepare data to match backend API exactly
+      let imageUrl = "";
+  
+      // ✅ Step 1: Upload image to backend → Cloudinary
+      if (uploadedImages.length > 0) {
+        const formDataImage = new FormData();
+        formDataImage.append("file", uploadedImages[0].file); // uploading the actual File object
+  
+        const uploadRes = await axios.post(
+          "/api/upload",
+          formDataImage,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+          }
+        );
+  
+        imageUrl = uploadRes.data.secure_url; // backend should return Cloudinary URL
+      }
+  
+      // ✅ Step 2: Prepare product data
       const productData = {
-        user_id:  userId,
-        image_url: uploadedImages.length > 0 ? uploadedImages[0].url : "",
+        user_id: userId,
+        image_url: imageUrl,
         title: formData.title,
         category: formData.category,
         description: formData.description,
         price: parseFloat(formData.price) || 0,
         quantity: parseInt(formData.quantity) || 1,
         condition: formData.condition,
-        year_of_manufacture: formData.year_of_manufacture ? parseInt(formData.year_of_manufacture) : null,
+        year_of_manufacture: formData.year_of_manufacture
+          ? parseInt(formData.year_of_manufacture)
+          : null,
         brand: formData.brand || null,
         model: formData.model || null,
         dimensions: formData.dimensions || null,
@@ -143,57 +164,58 @@ const AddNewProduct = () => {
         color: formData.color || null,
         original_packaging: formData.original_packaging,
         manual_included: formData.manual_included,
-        working_condition_desc: formData.working_condition_desc || null
+        working_condition_desc: formData.working_condition_desc || null,
       };
-
-       const response = await axios.post('http://localhost:3000/api/products', productData);
-      
-      // Success message
+  
+      // ✅ Step 3: Send product data to backend
+      const response = await axios.post(
+        "api/products",
+        productData
+      );
+  
+      // ✅ Step 4: Success message
       toast.success("✅ Product listed successfully!");
-      
-      // Reset form
+  
+      // ✅ Reset form
       setFormData({
-        image_url: '',
-        user_id: '',
-        title: '',
-        category: '',
-        description: '',
-        price: '',
-        quantity: '1',
-        condition: '',
-        year_of_manufacture: '',
-        brand: '',
-        model: '',
-        dimensions: '',
-        weight: '',
-        material: '',
-        color: '',
+        image_url: "",
+        user_id: "",
+        title: "",
+        category: "",
+        description: "",
+        price: "",
+        quantity: "1",
+        condition: "",
+        year_of_manufacture: "",
+        brand: "",
+        model: "",
+        dimensions: "",
+        weight: "",
+        material: "",
+        color: "",
         original_packaging: false,
         manual_included: false,
-        working_condition_desc: '',
-        listing_type: 'selling'
+        working_condition_desc: "",
+        listing_type: "selling",
       });
       setUploadedImages([]);
       setStep(1);
-
     } catch (error) {
-    toast.error(" Error:", error);
-      
-      // More detailed error handling
+      console.error("❌ Error uploading product:", error);
       if (error.response) {
-        // Server responded with error status
-        toast.error(`Error: ${error.response.data.error || 'Failed to create product'}`);
+        toast.error(
+          `Error: ${error.response.data.error || "Failed to create product"}`
+        );
       } else if (error.request) {
-        // Request was made but no response received
-        toast.error("Network error. Please check your connection and try again.");
+        toast.error("Network error. Please check your connection.");
       } else {
-        // Something else happened
         toast.error("Error creating product. Please try again.");
       }
     } finally {
       setIsSubmitting(false);
     }
   };
+  
   const ProgressBar = () => (
     <div className="mb-8">
       <div className="flex items-center justify-between mb-2">
@@ -267,6 +289,7 @@ const AddNewProduct = () => {
   );
 
   return (
+    <MainLayout>
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
@@ -645,6 +668,7 @@ const AddNewProduct = () => {
         </form>
       </div>
     </div>
+    </MainLayout>
   );
 };
 

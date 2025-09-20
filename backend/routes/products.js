@@ -2,10 +2,8 @@ import express from "express";
 import pool from "./db.js";
 
 const router = express.Router();
-
-router.post("/", async (req, res) => {
-  console.log("📝 Received product creation request:", req.body);
-  
+router.use(express.json({ limit: "10mb" })); // allow up to 10MB JSON payload
+router.post("/products", async (req, res) => {
   const {
     user_id,
     image_url,
@@ -45,11 +43,10 @@ router.post("/", async (req, res) => {
       ]
     );
 
-    console.log("✅ Product created successfully:", result.rows[0]);
     res.json(result.rows[0]);
   } catch (err) {
     console.error("❌ Error creating product:", err.message);
-    res.status(500).json({ error: "Internal server error", details: err.message });
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 export default router;
