@@ -1,28 +1,30 @@
 import React, { useState } from 'react';
 import MainLayout from '../../layouts/MainLayout';
-export default function AddNewProduct  ()  {
+
+const AddNewProduct = () => {
   const [formData, setFormData] = useState({
-    image: null,
+    image_url: '',
+    user_id: '',
     title: '',
     category: '',
     description: '',
     price: '',
     quantity: '',
     condition: '',
-    year: '',
+    year_of_manufacture: '',
     brand: '',
     model: '',
     dimensions: '',
     weight: '',
     material: '',
     color: '',
-    hasOriginalPackaging: false,
-    hasManual: false,
-    workingCondition: '',
+    original_packaging: false,
+    manual_included: false,
+    working_condition_desc: '',
   });
 
   const handleChange = (e) => {
-    const { name, value, type, checked, files } = e.target;
+    const { name, value, type, checked} = e.target;
     if (type === 'checkbox') {
       setFormData({ ...formData, [name]: checked });
     } else if (name === 'image') {
@@ -32,12 +34,49 @@ export default function AddNewProduct  ()  {
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Product data submitted:', formData);
-    // You would typically send this data to an API here.
-    alert('Product listing submitted!');
-  };
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    const res = await fetch("http://localhost:3000/api/products", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    });
+
+    if (!res.ok) throw new Error("Failed to create product");
+
+    const data = await res.json();
+    alert("✅ Product created: " + JSON.stringify(data));
+
+    // ✅ Reset form after success
+    setFormData({
+      user_id: "",
+      image_url: "",
+      title: "",
+      category: "",
+      description: "",
+      price: "",
+      quantity: "",
+      condition: "",
+      year_of_manufacture: "",
+      brand: "",
+      model: "",
+      dimensions: "",
+      weight: "",
+      material: "",
+      color: "",
+      original_packaging: false,
+      manual_included: false,
+      working_condition_desc: "",
+    });
+
+  } catch (err) {
+    console.error("❌ Error:", err);
+    alert("Error creating product");
+  }
+};
+
+  
 
   return (
     <MainLayout>
@@ -50,28 +89,17 @@ export default function AddNewProduct  ()  {
         <form onSubmit={handleSubmit} className="space-y-6">
           
           {/* Product Image Upload */}
-          <div className="w-full h-48 bg-gray-200 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-400 cursor-pointer hover:border-blue-500 transition-colors">
-            <label htmlFor="image-upload" className="text-center text-gray-500 cursor-pointer">
-              {formData.image ? (
-                <img src={URL.createObjectURL(formData.image)} alt="Product Preview" className="h-full w-full object-cover rounded-lg" />
-              ) : (
-                <>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <p className="mt-2 text-sm">Add product image</p>
-                </>
-              )}
-            </label>
-            <input
-              id="image-upload"
-              type="file"
-              name="image"
-              onChange={handleChange}
-              className="hidden"
-            />
+          
+          <div>
+            <label htmlFor="user_id" className="block text-sm font-medium text-gray-700">User id </label>
+            <input type="text" id="user_id" name="user_id" value={formData.user_id} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
           </div>
 
+          <div>
+            <label htmlFor="image_url" className="block text-sm font-medium text-gray-700">Image_url</label>
+            <input type="text" id="image_url" name="image_url" value={formData.image_url} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+          </div>
+      
           {/* Core Product Details */}
           <div>
             <label htmlFor="title" className="block text-sm font-medium text-gray-700">Product Title</label>
@@ -79,10 +107,7 @@ export default function AddNewProduct  ()  {
           </div>
           <div>
             <label htmlFor="category" className="block text-sm font-medium text-gray-700">Product Category</label>
-            <select id="category" name="category" value={formData.category} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-              <option value="">Select Category</option>
-              {/* Add your category options here */}
-            </select>
+            <input type="text" id="category" name="category" value={formData.category} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" /> 
           </div>
           <div>
             <label htmlFor="description" className="block text-sm font-medium text-gray-700">Product Description</label>
@@ -113,10 +138,20 @@ export default function AddNewProduct  ()  {
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="year" className="block text-sm font-medium text-gray-700">Year of Manufacture</label>
-              <input type="number" id="year" name="year" value={formData.year} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
-            </div>
+<div>
+  <label htmlFor="year_of_manufacture" className="block text-sm font-medium text-gray-700">
+    Year of Manufacture
+  </label>
+  <input
+    type="number"
+    id="year_of_manufacture"
+    name="year_of_manufacture"
+    value={formData.year_of_manufacture}
+    onChange={handleChange}
+    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+  />
+</div>
+
             <div>
               <label htmlFor="brand" className="block text-sm font-medium text-gray-700">Brand</label>
               <input type="text" id="brand" name="brand" value={formData.brand} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
@@ -151,24 +186,24 @@ export default function AddNewProduct  ()  {
           <div className="space-y-4">
             <div className="relative flex items-start">
               <div className="flex items-center h-5">
-                <input id="hasOriginalPackaging" name="hasOriginalPackaging" type="checkbox" checked={formData.hasOriginalPackaging} onChange={handleChange} className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded" />
+                <input id="original_packaging" name="original_packaging" type="checkbox" checked={formData.original_packaging} onChange={handleChange} className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded" />
               </div>
               <div className="ml-3 text-sm">
-                <label htmlFor="hasOriginalPackaging" className="font-medium text-gray-700">Original Packaging</label>
+                <label htmlFor="original_packaging" className="font-medium text-gray-700">Original Packaging</label>
               </div>
             </div>
             <div className="relative flex items-start">
               <div className="flex items-center h-5">
-                <input id="hasManual" name="hasManual" type="checkbox" checked={formData.hasManual} onChange={handleChange} className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded" />
+                <input id="manual_included" name="manual_included" type="checkbox" checked={formData.manual_included} onChange={handleChange} className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded" />
               </div>
               <div className="ml-3 text-sm">
-                <label htmlFor="hasManual" className="font-medium text-gray-700">Manual/Instructions Included</label>
+                <label htmlFor="manual_included" className="font-medium text-gray-700">Manual/Instructions Included</label>
               </div>
             </div>
           </div>
           <div>
-            <label htmlFor="workingCondition" className="block text-sm font-medium text-gray-700">Working Condition Description</label>
-            <textarea id="workingCondition" name="workingCondition" rows="3" value={formData.workingCondition} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+            <label htmlFor="working_condition_desc" className="block text-sm font-medium text-gray-700">Working Condition Description</label>
+            <textarea id="working_condition_desc" name="working_condition_desc" rows="3" value={formData.working_condition_desc} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
           </div>
           
           {/* Submit Button */}
@@ -184,4 +219,6 @@ export default function AddNewProduct  ()  {
     </MainLayout>
   );
 };
+
+export default AddNewProduct;
 

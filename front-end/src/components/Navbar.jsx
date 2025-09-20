@@ -7,7 +7,8 @@ export default function Navbar() {
 
   // Pages to navigate
   const pages = [
-    { name: "My Listing", path: "/my-listing" },
+    {name: "Home", path: "/" },
+    { name: "My Listing", path: "/user-dashboard" },
     { name: "Add Product", path: "/add-product" },
     { name: "About", path: "/about" },
     { name: "Contact", path: "/contact" },
