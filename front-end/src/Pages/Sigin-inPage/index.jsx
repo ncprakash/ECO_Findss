@@ -1,8 +1,10 @@
 // src/components/SignupForm.jsx
 import React, { useState } from "react";
 import axios from "axios";
+import { Link, useNavigate } from "react-router-dom";
 
 const Signup = () => {
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     username: "",
@@ -62,6 +64,7 @@ const Signup = () => {
         postal_code: "",
       });
       setStep(1);
+      navigate("/verify");
     } catch (err) {
       alert(err.response?.data?.message || "Signup failed");
     }
