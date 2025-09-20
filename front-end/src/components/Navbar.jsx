@@ -8,7 +8,7 @@ export default function Navbar() {
   // Pages to navigate
   const pages = [
     {name: "Home", path: "/" },
-    { name: "My Listing", path: "/user-dashboard" },
+    { name: "Community", path: "/community" },
     { name: "Add Product", path: "/add-product" },
     { name: "About", path: "/about" },
     { name: "Contact", path: "/contact" },
@@ -49,7 +49,7 @@ export default function Navbar() {
             1
           </span>
         </div>
-        <Link to='/dashboard'>
+        <Link to='/user-dashboard'>
           <FaUserCircle className="text-2xl" />
         </Link>
       </div>

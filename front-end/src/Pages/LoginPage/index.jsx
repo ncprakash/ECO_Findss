@@ -21,8 +21,9 @@ const Login = () => {
     try {
       const res = await axios.post("/api/login", formData);
       localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user_id", res.data.user.id); 
       toast.success("✅ Login successful!", { id: loadingToast });
-      navigate("/dashboard"); // redirect after login
+      navigate("/user-dashboard"); // redirect after login
     } catch (err) {
       toast.error(err.response?.data?.error || "❌ Login failed", {
         id: loadingToast,

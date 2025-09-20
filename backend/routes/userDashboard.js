@@ -12,9 +12,9 @@ router.post("/userDashboard", async (req, res) => {
   }
 
   try {
-    // ✅ Get user details using id from users
+
     const userResult = await pool.query(
-      `SELECT username, full_name, bio, email 
+      `SELECT username, full_name, bio, avatar_url, address,city,state,country,postal_code,location,friends_count,eco_points
        FROM users 
        WHERE id = $1`,
       [user_id]
@@ -34,7 +34,7 @@ router.post("/userDashboard", async (req, res) => {
 
     return res.json({
       user: userResult.rows[0],
-      products: productResult.rows, // can be empty if user has no products
+      products: productResult.rows, 
     });
   } catch (err) {
     console.error("❌ Error fetching user details:", err.message);
