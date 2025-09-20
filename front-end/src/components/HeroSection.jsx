@@ -1,6 +1,9 @@
 
 import React from "react";
+import { Link } from "react-router-dom";
 export default function HeroSection(){
+  const isLoggedIn = !!localStorage.getItem("token");
+
     return(
     <>
        <div className="bg-background-light dark:bg-background-dark font-display text-neutral-800 dark:text-neutral-200">
@@ -21,12 +24,14 @@ export default function HeroSection(){
                 Eco-Finds helps you reuse, share, and make a positive impact in your neighborhood.
               </p>
               <div className="mt-8 w-full flex flex-col sm:flex-row sm:justify-center gap-4">
+  <Link to={isLoggedIn ? "/user-dashboard" : "/login"}>
   <button className="w-full sm:w-auto px-8 py-3 bg-green-500 text-white font-bold rounded-lg shadow-md hover:bg-green-800 transition-all duration-300">
     Get Started
-  </button>
+  </button></Link>
+  <Link to={isLoggedIn ? "/community" : "/login"}>
   <button className="w-full sm:w-auto px-8 py-3 bg-green-500 text-white font-bold rounded-lg shadow-md hover:bg-black transition-all duration-300">
     Explore Items
-  </button>
+  </button></Link>
 </div>
             </div>
           </main>

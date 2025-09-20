@@ -40,6 +40,7 @@ export default function Community() {
               userAvator={post.user_avatar || "null"} // fallback avatar
               time={post.created_at ? new Date(post.created_at).toLocaleString() : "Just now"} // format if timestamp exists
               des={post.description || post.des}
+              title={post.title || "No Title"}
               image={post.image_url || post.image || ""}
               likes={post.likes || 0} // optional
             />
