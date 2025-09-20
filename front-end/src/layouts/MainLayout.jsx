@@ -2,22 +2,17 @@ import React from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
-const MainLayout = ({ children }) => {
+export default function MainLayout({ children }) {
   return (
-    <div className="flex flex-col min-h-screen">
-      
-      {/* Navbar */}
+    <div className="bg-background-light dark:bg-background-dark font-display min-h-screen flex flex-col">
+      {/* Navbar appears on all pages */}
       <Navbar />
 
-      {/* Main content */}
-      <main className="flex-1 bg-gray-100">
-        {children}
-      </main>
+      {/* Page content */}
+      <main className="flex-grow">{children}</main>
 
-      {/* Footer */}
+      {/* Footer appears on all pages */}
       <Footer />
     </div>
   );
-};
-
-export default MainLayout;
+}

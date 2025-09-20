@@ -4,34 +4,44 @@ import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { Edit2 } from "lucide-react";
-import { Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 const Dashboard = () => {
+  const navigate=useNavigate();
   const [user, setUser] = useState(null);
+  const[loading,setloading]=useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
+    
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:3000/api/profile", {
+        
+        const res = await axios.get("/api/profile", {
           headers: { Authorization: `Bearer ${token}` },
         });
 
         setUser(res.data.user); // ✅ set user object
       } catch (err) {
-        Navigate("/login");
+        navigate("/login");
         toast.error("Failed to load profile");
+      } finally{
+        setloading(false);
       }
     };
     fetchData();
-  }, []);
+  }, [navigate]);
+if(loading){
+  return <p className="text-center mt-10">Loading...</p>;
+}
+ if(!user){
+  return <p className="text-center mt-10">No user data available</p>;
 
-  if (!user) return <p className="text-center mt-10">Loading...</p>;
+ }
+ const chartData = [
+  { name: "Friends", value: user?.friends_count || 0 },
+  { name: "Eco Points", value: user?.eco_points || 0 },
+];
 
-  const chartData = [
-    { name: "Friends", value: user.friends_count || 0 },
-    { name: "Posts", value: 12 },
-    { name: "Likes", value: 40 },
-  ];
 
   return (
     <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">

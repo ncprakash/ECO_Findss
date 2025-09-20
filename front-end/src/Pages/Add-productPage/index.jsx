@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import MainLayout from '../../layouts/MainLayout';
-
 export default function AddNewProduct  ()  {
   const [formData, setFormData] = useState({
     image: null,
