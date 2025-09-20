@@ -314,7 +314,7 @@ export default function Community() {
             <p className="text-gray-600 mb-8">
               Be the first to share something with the community!
             </p>
-            <button   className="bg-green-500 hover:bg-green-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors shadow-md">
+            <button onClick={()=>navigate('/add-product')} className="bg-green-500 hover:bg-green-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors shadow-md">
               Create First Post
             </button>
           </div>
