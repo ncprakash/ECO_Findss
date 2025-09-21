@@ -11,8 +11,10 @@ import cloud from "./routes/cloudinary.js";
 import posts from "./routes/communityPost.js"
 import productDetails from "./routes/productDetail.js"
 const app = express();
+import http from "http";
+import setupChat from "./routes/chatting.js";
 const port = 3000;
-
+const server = http.createServer(app);
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -29,8 +31,8 @@ app.use("/api", userDashboard)
 app.use("/api",posts);
 app.use('/api',productDetails)
 
-
+const io = setupChat(server);
 // Start server
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`✅ Server running at http://localhost:${port}`);
 });
