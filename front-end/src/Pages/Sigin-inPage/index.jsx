@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
+import MainLayout from "@/layouts/MainLayout";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -46,7 +47,7 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:3000/api/signup", formData);
+      const res = await axios.post("/api/signup", formData);
       alert(res.data.message);
       setFormData({
         username: "",
@@ -82,31 +83,10 @@ const Signup = () => {
   ];
 
   return (
+    <MainLayout>
     <div className="flex flex-col min-h-screen bg-background-light dark:bg-background-dark font-display">
       {/* Header */}
-      <header className="w-full">
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <svg
-              className="h-8 w-8 text-primary"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              ></path>
-            </svg>
-            <h1 className="text-xl font-bold text-green-600 dark:text-green-400">
-              ECO Finds
-            </h1>
-          </div>
-        </div>
-      </header>
+      
 
       {/* Main */}
       <main className="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -411,6 +391,7 @@ const Signup = () => {
         </div>
       </main>
     </div>
+    </MainLayout>
   );
 };
 

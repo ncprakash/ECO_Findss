@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
+import MainLayout from "@/layouts/MainLayout";
 
 const Login = () => {
   const navigate = useNavigate(); // ✅ useNavigate hook
@@ -22,7 +23,7 @@ const Login = () => {
 
     try {
       setLoading(true);
-      const res = await axios.post("http://localhost:3000/api/login", formData);
+      const res = await axios.post("/api/login", formData);
       
 
       // ✅ Save JWT token to localStorage
@@ -40,41 +41,8 @@ const Login = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background-light dark:bg-background-dark font-display text-text-light dark:text-text-dark">
-      {/* Header */}
-      <header className="border-b border-border-light dark:border-border-dark px-4 sm:px-6 lg:px-8">
-        <div className="container mx-auto flex items-center justify-between h-16">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 text-green-600 dark:text-green-600">
-              <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  clipRule="evenodd"
-                  d="M24 4.24264L43.7574 24L24 43.7574L4.24264 24L24 4.24264ZM12.2426 21H35.7574L24 9.24264L12.2426 21Z"
-                  fill="currentColor"
-                  fillRule="evenodd"
-                />
-              </svg>
-            </div>
-            <h1 className="text-xl font-bold text-green-600 dark:text-green-600">ECO Finds</h1>
-          </div>
-
-          <nav className="hidden md:flex items-center gap-6">
-            <button className="text-sm font-medium hover:text-primary transition-colors">Home</button>
-            <button className="text-sm font-medium hover:text-primary transition-colors">Shop</button>
-            <button className="text-sm font-medium hover:text-primary transition-colors">About</button>
-            <button className="text-sm font-medium hover:text-primary transition-colors">Contact</button>
-          </nav>
-
-          <div className="flex items-center gap-4">
-            <button className="text-primary font-medium hover:underline transition-colors text-sm">Login</button>
-            <Link to="/signup">
-              <button className="bg-primary/20 dark:bg-primary/30 text-primary px-4 py-2 rounded-lg text-sm font-bold hover:bg-primary/30 dark:hover:bg-primary/40 transition-colors">
-                Sign Up
-              </button>
-            </Link>
-          </div>
-        </div>
-      </header>
+    <MainLayout>
+   
 
       {/* Main */}
       <main className="flex-grow flex items-center justify-center p-4">
@@ -134,7 +102,8 @@ const Login = () => {
           </div>
         </div>
       </main>
-    </div>
+    
+    </MainLayout>
   );
 };
 
