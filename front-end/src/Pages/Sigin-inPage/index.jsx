@@ -1,11 +1,10 @@
+// src/components/SignupForm.jsx
 import React, { useState } from "react";
 import axios from "axios";
-import { toast } from "sonner";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import MainLayout from "@/layouts/MainLayout";
 
-
-
-function Signup() {
+const Signup = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -25,187 +24,265 @@ function Signup() {
   });
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    let { name, value } = e.target;
+
+    // Validation for specific fields
+    if (name === "phone") value = value.replace(/\D/g, ""); // numbers only
+    if (name === "postal_code") value = value.replace(/\D/g, ""); // numbers only
+    if (name === "dob") value = value.slice(0, 10); // enforce YYYY-MM-DD
+
+    setFormData({ ...formData, [name]: value });
   };
 
-  const handleNext = () => setStep(2);
-  const handleBack = () => setStep(1);
+  const handleNext = () => setStep((prev) => Math.min(prev + 1, 3));
+  const handleBack = () => setStep((prev) => Math.max(prev - 1, 1));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    
-
     try {
-      localStorage.setItem('signupData', JSON.stringify(formData));
-  
-      await axios.post('/api/send-otp', { email: formData.email }).then(function(response){
-        console.log(response);
-      }).catch(function(error){
-            console.log(error);
-      })
-  
-     
-      navigate(`/verify?email=${encodeURIComponent(formData.email)}`);
+      // ✅ Save all signup data in localStorage
+      localStorage.setItem("signupData", JSON.stringify(formData));
+
+      // ✅ Send only email to backend
+      await axios.post("/api/send-otp", { email: formData.email });
+
+      // ✅ Redirect to verify with email param
+      navigate(`/verify?email=${formData.email}`);
     } catch (err) {
-      console.error('Detailed error:', err);
-      console.error('Response data:', err.response?.data);
-      console.error('Response status:', err.response?.status);
-      console.error('Headers:', err.response?.headers);
-  
-      toast.error(err.response?.data?.error || 'Failed to send OTP');
-  }
+      console.error("Signup error:", err);
+      alert(err.response?.data?.error || "Signup failed, please try again.");
+    }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 px-4">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
-        <h2 className="text-2xl font-bold text-center mb-6">Create Account</h2>
+    <MainLayout>
+      <div className="flex flex-col min-h-screen bg-background-light dark:bg-background-dark font-display">
+        <main className="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+          <div className="w-full max-w-md space-y-8">
+            {/* Heading */}
+            <div className="text-center">
+              <h2 className="text-3xl font-extrabold text-black-600 dark:text-black-400">
+                {step === 1
+                  ? "Create your account"
+                  : step === 2
+                  ? "Tell us about yourself"
+                  : "Almost there!!!"}
+              </h2>
+              <p className="mt-2 text-sm text-black-600/70 dark:text-black-400/70">
+                {step === 1
+                  ? "Start your journey with us."
+                  : step === 2
+                  ? "Let's get your profile set up."
+                  : "Please provide your address details."}
+              </p>
+            </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {step === 1 && (
-            <>
-              <input
-                type="text"
-                name="username"
-                placeholder="Username"
-                value={formData.username}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-              <input
-                type="email"
-                name="email"
-                placeholder="Email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-              <input
-                type="password"
-                name="password"
-                placeholder="Password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
+            {/* Step indicators */}
+            <div className="flex justify-center">
+              <div className="flex items-center space-x-4">
+                {[1, 2, 3].map((i) => (
+                  <React.Fragment key={i}>
+                    {i > 1 && <div className="w-16 h-1 bg-green-500/30"></div>}
+                    <div
+                      className={`flex items-center justify-center w-8 h-8 rounded-full font-bold ${
+                        step >= i
+                          ? "bg-green-500 text-white"
+                          : "bg-green-500/30 text-green-500"
+                      }`}
+                    >
+                      {i}
+                    </div>
+                  </React.Fragment>
+                ))}
+              </div>
+            </div>
 
-              <button
-                type="button"
-                onClick={handleNext}
-                className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
-              >
-                Next →
-              </button>
-            </>
-          )}
+            {/* Form */}
+            <form
+              onSubmit={handleSubmit}
+              className="mt-8 space-y-6 bg-background-light dark:bg-background-dark/50 p-8 rounded-xl shadow-lg"
+            >
+              {/* Step 1 */}
+              {step === 1 && (
+                <div className="space-y-6">
+                  {["username", "email", "password"].map((field) => (
+                    <div key={field}>
+                      <label className="text-sm font-medium text-black-600/80 dark:text-black-400/80">
+                        {field === "username"
+                          ? "Username"
+                          : field === "email"
+                          ? "Email address"
+                          : "Password"}
+                      </label>
+                      <input
+                        name={field}
+                        type={field === "password" ? "password" : field}
+                        placeholder={
+                          field === "username"
+                            ? "Choose a username"
+                            : field === "email"
+                            ? "you@example.com"
+                            : "Enter your password"
+                        }
+                        value={formData[field]}
+                        onChange={handleChange}
+                        required
+                        className="form-input mt-1 block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
 
-          {step === 2 && (
-            <>
-              <input
-                type="text"
-                name="full_name"
-                placeholder="Full Name"
-                value={formData.full_name}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-              <input
-                type="text"
-                name="bio"
-                placeholder="Bio"
-                value={formData.bio}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-              <input
-                type="text"
-                name="phone"
-                placeholder="Phone"
-                value={formData.phone}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-              <input
-                type="text"
-                name="gender"
-                placeholder="Gender"
-                value={formData.gender}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-              <input
-                type="date"
-                name="dob"
-                value={formData.dob}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-              <input
-                type="text"
-                name="address"
-                placeholder="Address"
-                value={formData.address}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-              <input
-                type="text"
-                name="city"
-                placeholder="City"
-                value={formData.city}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-              <input
-                type="text"
-                name="state"
-                placeholder="State"
-                value={formData.state}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-              <input
-                type="text"
-                name="country"
-                placeholder="Country"
-                value={formData.country}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-              <input
-                type="text"
-                name="postal_code"
-                placeholder="Postal Code"
-                value={formData.postal_code}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
+              {/* Step 2 */}
+              {step === 2 && (
+                <div className="space-y-6">
+                  <input
+                    name="full_name"
+                    placeholder="Full Name"
+                    value={formData.full_name}
+                    onChange={handleChange}
+                    required
+                    className="form-input block w-full px-4 py-3 border rounded-lg"
+                  />
+                  <textarea
+                    name="bio"
+                    placeholder="Tell us something about yourself"
+                    value={formData.bio}
+                    onChange={handleChange}
+                    className="form-input block w-full px-4 py-3 border rounded-lg"
+                  />
+                  <input
+                    name="phone"
+                    type="tel"
+                    placeholder="Enter your phone number"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    maxLength={10}
+                    required
+                    className="form-input block w-full px-4 py-3 border rounded-lg"
+                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <select
+                      name="gender"
+                      value={formData.gender}
+                      onChange={handleChange}
+                      required
+                      className="form-select block w-full px-4 py-3 border rounded-lg"
+                    >
+                      <option value="" disabled>
+                        Select Gender
+                      </option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Prefer not to say">
+                        Prefer not to say
+                      </option>
+                    </select>
+                    <input
+                      name="dob"
+                      type="date"
+                      value={formData.dob}
+                      onChange={handleChange}
+                      required
+                      className="form-input block w-full px-4 py-3 border rounded-lg"
+                    />
+                  </div>
+                </div>
+              )}
 
-              <div className="flex gap-2 mt-4">
+              {/* Step 3 */}
+              {step === 3 && (
+                <div className="space-y-6">
+                  <input
+                    name="address"
+                    placeholder="Address"
+                    value={formData.address}
+                    onChange={handleChange}
+                    required
+                    className="form-input block w-full px-4 py-3 border rounded-lg"
+                  />
+                  <div className="flex gap-2">
+                    <input
+                      name="city"
+                      placeholder="City"
+                      value={formData.city}
+                      onChange={handleChange}
+                      required
+                      className="form-input block w-1/2 px-4 py-3 border rounded-lg"
+                    />
+                    <input
+                      name="state"
+                      placeholder="State"
+                      value={formData.state}
+                      onChange={handleChange}
+                      required
+                      className="form-input block w-1/2 px-4 py-3 border rounded-lg"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      name="country"
+                      placeholder="Country"
+                      value={formData.country}
+                      onChange={handleChange}
+                      required
+                      className="form-input block w-1/2 px-4 py-3 border rounded-lg"
+                    />
+                    <input
+                      name="postal_code"
+                      placeholder="Postal Code"
+                      value={formData.postal_code}
+                      onChange={handleChange}
+                      maxLength={10}
+                      required
+                      className="form-input block w-1/2 px-4 py-3 border rounded-lg"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Buttons */}
+              <div className="flex items-center justify-between pt-6">
+                {step > 1 && (
+                  <button
+                    type="button"
+                    onClick={handleBack}
+                    className="px-4 py-3 bg-gray-300 rounded-lg w-1/2 mr-2"
+                  >
+                    Back
+                  </button>
+                )}
                 <button
-                  type="button"
-                  onClick={handleBack}
-                  className="w-1/2 bg-gray-300 text-gray-800 py-2 rounded-lg hover:bg-gray-400 transition"
+                  type={step === 3 ? "submit" : "button"}
+                  onClick={() => {
+                    if (step < 3) handleNext();
+                  }}
+                  className={`px-4 py-3 bg-green-500 text-white rounded-lg ${
+                    step === 1 ? "w-full" : "w-1/2"
+                  }`}
                 >
-                  ← Back
-                </button>
-                <button
-                  type="submit"
-                  className="w-1/2 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition"
-                >
-                  Sign Up ✅
+                  {step === 3 ? "Complete Sign-Up" : "Continue"}
                 </button>
               </div>
-            </>
-          )}
-        </form>
+            </form>
+
+            {/* Link */}
+            <p className="text-center text-sm text-green-600/70 dark:text-green-400/70">
+              Already have an account?{" "}
+              <a
+                className="font-medium text-green-500 hover:text-green-400"
+                href="/login"
+              >
+                Sign in
+              </a>
+            </p>
+          </div>
+        </main>
       </div>
-    </div>
+    </MainLayout>
   );
-}
+};
 
 export default Signup;
