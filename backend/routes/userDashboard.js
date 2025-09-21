@@ -12,9 +12,9 @@ router.post("/userDashboard", async (req, res) => {
   }
 
   try {
-
+    // ✅ Get user details using id from users
     const userResult = await pool.query(
-      `SELECT username, full_name, bio, avatar_url, address,city,state,country,postal_code,location,friends_count,eco_points
+      `SELECT id, username, full_name, bio, email, avatar_url, friends_count, eco_points, city, country
        FROM users 
        WHERE id = $1`,
       [user_id]
@@ -24,17 +24,20 @@ router.post("/userDashboard", async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // ✅ Get product details where user_id matches in products
+    // ✅ Get all product details for this user
     const productResult = await pool.query(
-      `SELECT title, image_url, description 
-       FROM products 
-       WHERE user_id = $1`,
+      `SELECT id, user_id, image_url, title, category, description, price, quantity,
+              condition, year_of_manufacture, brand, model, dimensions, weight,
+              material, color, original_packaging, manual_included, working_condition_desc, created_at, updated_at
+       FROM products
+       WHERE user_id = $1
+       ORDER BY created_at DESC`,
       [user_id]
     );
 
     return res.json({
       user: userResult.rows[0],
-      products: productResult.rows, 
+      products: productResult.rows, // full details
     });
   } catch (err) {
     console.error("❌ Error fetching user details:", err.message);

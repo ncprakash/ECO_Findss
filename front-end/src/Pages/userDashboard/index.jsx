@@ -1,139 +1,173 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { toast } from "sonner"
-import { MapPin, List, Plus } from "lucide-react";
+import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
 const UserDashboard = () => {
   const navigate = useNavigate();
-
   const [user, setUser] = useState(null);
   const [friends, setFriends] = useState(0);
   const [ecoPoints, setEcoPoints] = useState(0);
   const [myPosts, setMyPosts] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [viewMode, setViewMode] = useState("map");
 
   // Fetch dashboard data
-  const fetchDashboard = () => {
+  const fetchDashboard = async () => {
     const token = localStorage.getItem("token");
-    const userId = localStorage.getItem("user_id"); // or get it from state/input
+    const userId = localStorage.getItem("user_id");
   
     if (!token || !userId) {
       toast.error("You are not logged in or user_id is missing");
       navigate("/login");
       return;
     }
-  
-    axios
-      .post(
+
+    setLoading(true);
+    try {
+      const res = await axios.post(
         "/api/userDashboard",
-        { user_id: userId }, // send user_id in body
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      )
-      .then((res) => {
-        setUser(res.data.user);
-        setFriends(res.data.user.friends_count);
-        setEcoPoints(res.data.user.eco_points);
-        setMyPosts(res.data.posts || []);
-      })
-      .catch((err) => {
-        toast.error(err.response?.data?.message || "Something went wrong");
-      });
+        { user_id: userId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setUser(res.data.user);
+      setFriends(res.data.user.friends_count);
+      setEcoPoints(res.data.user.eco_points);
+      setMyPosts(res.data.products || []); // assuming backend returns products/posts
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
-  
+
   useEffect(() => {
     fetchDashboard();
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user_id");
     navigate("/login");
     toast.success("Logged out successfully");
   };
 
-  if (loading) {
-    return <p className="p-4 text-center">Loading dashboard...</p>;
-  }
+  if (loading) return <p className="p-4 text-center">Loading dashboard...</p>;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-4">
-      {/* Profile Section */}
+    <div className="bg-slate-50 dark:bg-slate-900 p-4">
+      {/* Profile Card */}
       {user && (
-        <section className="flex flex-col items-center gap-4 text-center mb-6">
-          <div
-            className="aspect-square w-32 rounded-full bg-cover bg-center shadow-lg ring-4 ring-green-200 dark:ring-green-700"
-            style={{ backgroundImage: `url(${user.avatar_url})` }}
-          />
-          <p className="text-2xl font-bold text-slate-800 dark:text-white">{user.full_name}</p>
-          <p className="text-base text-slate-600 dark:text-slate-400">@{user.username}</p>
-          <p className="text-base text-slate-700 dark:text-slate-300">{user.bio}</p>
-          <p className="text-base text-slate-700 dark:text-slate-300">{user.city}, {user.country}</p>
+        <section className="w-[90vw] mx-auto mb-4">
+          <div className="flex flex-col md:flex-row items-start gap-24 bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-xl transition-colors">
+            {/* Avatar */}
+            <div
+              className="w-48 h-48 rounded-full bg-cover bg-center ring-4 ring-green-200 dark:ring-green-700 shadow-lg flex-shrink-0"
+              style={{ backgroundImage: `url(${user.avatar_url || "/default-avatar.png"})` }}
+            />
 
-          <div className="flex gap-3 w-full max-w-sm mt-2">
-            <button className="flex-1 rounded-lg bg-green-100 px-4 py-2.5 text-sm font-bold text-green-800 hover:bg-green-200 dark:bg-green-800 dark:text-green-100 dark:hover:bg-green-700 transition-colors">
-              Edit Profile
-            </button>
-            <button
-              onClick={handleLogout}
-              className="flex-1 rounded-lg bg-red-100 px-4 py-2.5 text-sm font-bold text-red-800 hover:bg-red-200 dark:bg-red-800 dark:text-red-100 dark:hover:bg-red-700 transition-colors"
-            >
-              Logout
-            </button>
+            {/* Right Content */}
+            <div className="flex-1 flex flex-col justify-start">
+              <p className="text-3xl font-bold text-slate-800 dark:text-white">{user.username}</p>
+
+              {/* Stats */}
+              <div className="flex gap-6 mt-1">
+                <div className="flex items-center gap-1">
+                  <p className="text-lg font-bold text-slate-800 dark:text-white">{myPosts.length}</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Posts</p>
+                </div>
+                <div className="flex items-center gap-1">
+                  <p className="text-lg font-bold text-slate-800 dark:text-white">{friends}</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Friends</p>
+                </div>
+                <div className="flex items-center gap-1">
+                  <p className="text-lg font-bold text-slate-800 dark:text-white">{ecoPoints}</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Eco Points</p>
+                </div>
+ 
+              </div>
+
+              {/* Full Name + Bio + Address */}
+              <div className="mt-1">
+                <p className="font-semibold text-slate-800 dark:text-white">{user.full_name}</p>
+                {user.bio && <p className="text-sm text-slate-700 dark:text-slate-300">{user.bio}</p>}
+                {(user.city || user.country) && (
+                  <p className="text-sm text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                    📍 {user.city}, {user.country}
+                  </p>
+                )}
+              </div>
+
+              {/* Buttons */}
+              <div className="flex gap-4 mt-4">
+                <button className="rounded-lg bg-green-100 px-4 py-2 text-sm font-semibold text-green-800 hover:bg-green-200 dark:bg-green-800 dark:text-green-100 dark:hover:bg-green-700 transition-colors shadow-sm">
+                  Edit Profile
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="rounded-lg bg-red-100 px-4 py-2 text-sm font-semibold text-red-800 hover:bg-red-200 dark:bg-red-800 dark:text-red-100 dark:hover:bg-red-700 transition-colors shadow-sm"
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
           </div>
         </section>
       )}
 
-      {/* Stats */}
-      <section className="grid grid-cols-2 gap-4 mb-6">
-        <div className="flex flex-col items-center gap-1 rounded-lg border border-green-200 bg-white p-4 shadow-sm dark:border-green-700 dark:bg-slate-800">
-          <p className="text-2xl font-bold text-slate-800 dark:text-white">{friends}</p>
-          <p className="text-sm text-slate-600 dark:text-slate-400">Friends</p>
-        </div>
-        <div className="flex flex-col items-center gap-1 rounded-lg border border-green-200 bg-white p-4 shadow-sm dark:border-green-700 dark:bg-slate-800">
-          <p className="text-2xl font-bold text-slate-800 dark:text-white">{ecoPoints}</p>
-          <p className="text-sm text-slate-600 dark:text-slate-400">Eco Points</p>
-        </div>
-      </section>
+    <section className="w-[90vw] mx-auto mt-8">
+  <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-6">My Posts</h2>
 
-      {/* My Posts */}
-      <section>
-        <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-4">My Posts</h2>
-        {myPosts.length === 0 ? (
-          <p className="text-center text-gray-500">No posts found</p>
-        ) : (
-          <div className="space-y-4">
-            {myPosts.map((post) => (
-              <div
-                key={post.id}
-                className="flex items-start gap-3 rounded-lg border border-transparent p-2 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
-              >
-                <div
-                  className="h-10 w-10 rounded-full bg-cover bg-center"
-                  style={{ backgroundImage: `url(${post.avatar})` }}
-                />
-                <div className="flex-1">
-                  <div className="flex items-baseline gap-2">
-                    <p className="text-sm font-bold text-slate-800 dark:text-white">{post.user}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">{post.time}</p>
-                  </div>
-                  <p className="text-sm text-slate-700 dark:text-slate-300">{post.content}</p>
-                </div>
-              </div>
-            ))}
+  {myPosts.length === 0 ? (
+    <div className="text-center text-gray-500 py-12">
+      <p>No posts found</p>
+    </div>
+  ) : (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {myPosts.map((product) => (
+        <div
+          key={product.id}
+          className="bg-white dark:bg-slate-800 rounded-2xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
+        >
+          {/* Product Image */}
+          <div className="w-full h-48 bg-gray-100 flex items-center justify-center">
+            {product.image_url ? (
+              <img
+                src={product.image_url}
+                alt={product.title}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span className="text-gray-400">Image Unavailable</span>
+            )}
           </div>
-        )}
-      </section>
 
-      {/* Floating Action Button */}
-      <button onClick={()=>navigate('/add-product')} className="fixed bottom-24 right-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-600 text-white shadow-lg hover:scale-105 hover:bg-green-700 transition-transform">
-        <Plus className="h-8 w-8" />
-      </button>
+          {/* Product Info */}
+          <div className="p-4 space-y-1 text-sm text-slate-700 dark:text-slate-300">
+            <h3 className="font-semibold text-lg text-slate-800 dark:text-white">
+              {product.title || "Untitled Product"}
+            </h3>
+            <p><strong>Category:</strong> {product.category || "N/A"}</p>
+            <p><strong>Description:</strong> {product.description || "No description provided."}</p>
+          </div>
+
+          {/* View Details Button */}
+          <div className="p-4 border-t border-gray-100 dark:border-slate-700">
+            <button
+              onClick={() => window.location.href = `/product-details/${product.id}`}
+              className="w-full bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors duration-200"
+            >
+              View Details
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+</section>
+
+
+
     </div>
   );
 };
