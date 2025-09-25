@@ -13,13 +13,16 @@ import productDetails from "./routes/productDetail.js"
 const app = express();
 import http from "http";
 import setupChat from "./routes/chatting.js";
-const port = 3000;
+const port = process.env.PORT || 3000;
 const server = http.createServer(app);
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || "http://localhost:5173",
+  credentials: true
+}));
 app.use(express.json());
 
-// Routes
+
 app.use("/api", signInApi);
 app.use('/api',verify);
 app.use('/api',sendOtp);
@@ -30,6 +33,15 @@ app.use("/api",cloud)
 app.use("/api", userDashboard)
 app.use("/api",posts);
 app.use('/api',productDetails)
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    socket: 'Socket.io server is running'
+  });
+});
 
 const io = setupChat(server);
 // Start server

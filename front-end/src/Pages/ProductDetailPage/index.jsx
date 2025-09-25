@@ -4,14 +4,14 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "sonner";
 import { ArrowLeft, Share2, Heart, MapPin, User, Phone, Mail, RefreshCw, Tag, Calendar, Palette, Package } from "lucide-react";
-import Chat from "@/components/chatCard";
+
 
 export default function ProductDetails() {
     const params = useParams();
     const navigate = useNavigate();
     const { id, productId, user_id } = params;
     const actualId = id || productId || user_id;
-    const token = localStorage.getItem("token");
+   
     const userId = localStorage.getItem("user_id")
     
     const [product, setProduct] = useState(null);
@@ -201,7 +201,7 @@ export default function ProductDetails() {
             </div>
         );
     }
-
+ const curruserId=userId;const sellerId=product?.user_id;
     // Desktop Success State
     return (
         <div className="min-h-screen bg-gray-50">
@@ -363,27 +363,34 @@ export default function ProductDetails() {
 
                         {/* Action Buttons */}
                         <div className="space-y-4">
-                            <button 
-                               
-                                className="w-full flex items-center justify-center gap-3 py-4 bg-green-500 hover:bg-green-700 text-white rounded-xl font-semibold text-lg transition-colors shadow-lg"
-                            >
-                                <Phone className="w-5 h-5" />
-                                Contact Seller
-                            </button>
+                            {String(localStorage.getItem("user_id")) !== String(product?.user_id || product?.seller_id || product?.userId) && (
+                              <button 
+                                  className="w-full flex items-center justify-center gap-3 py-4 bg-green-500 hover:bg-green-700 text-white rounded-xl font-semibold text-lg transition-colors shadow-lg"
+                              >
+                                  <Phone className="w-5 h-5" />
+                                  Contact Seller
+                              </button>
+                            )}
                            
                             
                             
                             <div className="grid grid-cols-2 gap-4">
-                                <button  onClick={()=>setchatOpen(true)}className="flex items-center justify-center gap-2 py-3 bg-white hover:bg-gray-50 text-gray-700 rounded-xl font-medium transition-colors border shadow-sm">
-                                    <Mail className="w-4 h-4" />
-
-                                    Send Message
-                                </button>
-                                {chatOpen && 
-                            <div style={{ position: "fixed", bottom: 20, right: 20, border: "1px solid #ccc", padding: "1rem", background: "#fff" }}>
-                            <button onClick={() => setchatOpen(false)} style={{ float: "right" }}>
-                              ✖ Close
-                            </button><Chat currentUserId={userId} sellerId={product?.user_id}/> </div>}
+                                {String(localStorage.getItem("user_id")) !== String(product?.user_id || product?.seller_id || product?.userId) && (
+                                  <button  onClick={()=> {
+                                      const curruserId = localStorage.getItem("user_id");
+                                      const sellerId = product?.user_id || product?.seller_id || product?.userId;
+                                      if (!curruserId || !sellerId) {
+                                          toast.error("Unable to start chat. Please login.");
+                                          return;
+                                      }
+                                      const roomId = [curruserId, String(sellerId)].sort().join("_");
+                                      navigate(`/chat/${roomId}`);
+                                  }} className="flex items-center justify-center gap-2 py-3 bg-white hover:bg-gray-50 text-gray-700 rounded-xl font-medium transition-colors border shadow-sm">
+                                      <Mail className="w-4 h-4" />
+                                      Send Message
+                                  </button>
+                                )}
+                                
                                 <button className="flex items-center justify-center gap-2 py-3 bg-white hover:bg-gray-50 text-gray-700 rounded-xl font-medium transition-colors border shadow-sm">
                                     <MapPin className="w-4 h-4" />
                                     View Location

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { v4 as uuidv4 } from "uuid";
 
 const UserDashboard = () => {
   const navigate = useNavigate();
@@ -10,6 +11,9 @@ const UserDashboard = () => {
   const [ecoPoints, setEcoPoints] = useState(0);
   const [myPosts, setMyPosts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({ username: "", email: "", full_name: "", phone: "", gender: "", dob: "", address: "", city: "", state: "", country: "", postal_code: "", bio: "", avatar_url: "" });
+  const [uploading, setUploading] = useState(false);
 
   // Fetch dashboard data
   const fetchDashboard = async () => {
@@ -44,6 +48,80 @@ const UserDashboard = () => {
   useEffect(() => {
     fetchDashboard();
   }, []);
+  const openEdit = () => {
+    if (!user) return;
+    setEditForm({
+      username: user.username || "",
+      email: user.email || "",
+      full_name: user.full_name || "",
+      phone: user.phone || "",
+      gender: user.gender || "",
+      dob: user.dob ? String(user.dob).slice(0,10) : "",
+      address: user.address || "",
+      city: user.city || "",
+      state: user.state || "",
+      country: user.country || "",
+      postal_code: user.postal_code || "",
+      bio: user.bio || "",
+      avatar_url: user.avatar_url || ""
+    });
+    setIsEditing(true);
+  };
+
+  const handleAvatarUpload = async (file) => {
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      setUploading(true);
+      const res = await axios.post("/api/upload", formData, { headers: { "Content-Type": "multipart/form-data" } });
+      setEditForm((f) => ({ ...f, avatar_url: res.data.secure_url }));
+      toast.success("Avatar uploaded");
+    } catch (err) {
+      toast.error("Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const saveProfile = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await axios.patch(
+        "/api/profile",
+        editForm,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setUser(res.data.user);
+      toast.success("Profile updated");
+      setIsEditing(false);
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Update failed");
+    }
+  };
+
+  const deletePost = async (id) => {
+    const token = localStorage.getItem("token");
+    try {
+      const t = toast.loading("Deleting post...");
+      await axios.delete(`/api/products/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      setMyPosts((prev) => prev.filter((p) => p.id !== id));
+      toast.success("Post deleted", { id: t });
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Delete failed");
+    }
+  };
+
+  const requestDelete = (id) => {
+    const toastId = toast.warning("Delete this post?", {
+      duration: 6000,
+      action: {
+        label: "Delete",
+        onClick: () => deletePost(id)
+      }
+    });
+    return toastId;
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -100,7 +178,7 @@ const UserDashboard = () => {
 
               {/* Buttons */}
               <div className="flex gap-4 mt-4">
-                <button className="rounded-lg bg-green-100 px-4 py-2 text-sm font-semibold text-green-800 hover:bg-green-200 dark:bg-green-800 dark:text-green-100 dark:hover:bg-green-700 transition-colors shadow-sm">
+                <button onClick={openEdit} className="rounded-lg bg-green-100 px-4 py-2 text-sm font-semibold text-green-800 hover:bg-green-200 dark:bg-green-800 dark:text-green-100 dark:hover:bg-green-700 transition-colors shadow-sm">
                   Edit Profile
                 </button>
                 <button
@@ -113,6 +191,84 @@ const UserDashboard = () => {
             </div>
           </div>
         </section>
+      )}
+
+      {isEditing && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl w-full max-w-lg shadow-2xl">
+            <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-white">Edit Profile</h3>
+            <div className="flex flex-col gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm text-slate-700 dark:text-slate-300">Username</label>
+                  <input value={editForm.username} onChange={(e) => setEditForm({ ...editForm, username: e.target.value })} className="w-full border rounded-lg px-3 py-2" />
+                </div>
+                <div>
+                  <label className="text-sm text-slate-700 dark:text-slate-300">Email</label>
+                  <input type="email" value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} className="w-full border rounded-lg px-3 py-2" />
+                </div>
+                <div>
+                  <label className="text-sm text-slate-700 dark:text-slate-300">Full Name</label>
+                  <input value={editForm.full_name} onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })} className="w-full border rounded-lg px-3 py-2" />
+                </div>
+                <div>
+                  <label className="text-sm text-slate-700 dark:text-slate-300">Phone</label>
+                  <input value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} className="w-full border rounded-lg px-3 py-2" />
+                </div>
+                <div>
+                  <label className="text-sm text-slate-700 dark:text-slate-300">Gender</label>
+                  <select value={editForm.gender} onChange={(e) => setEditForm({ ...editForm, gender: e.target.value })} className="w-full border rounded-lg px-3 py-2">
+                    <option value="">Select</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm text-slate-700 dark:text-slate-300">Date of Birth</label>
+                  <input type="date" value={editForm.dob} onChange={(e) => setEditForm({ ...editForm, dob: e.target.value })} className="w-full border rounded-lg px-3 py-2" />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="text-sm text-slate-700 dark:text-slate-300">Address</label>
+                  <input value={editForm.address} onChange={(e) => setEditForm({ ...editForm, address: e.target.value })} className="w-full border rounded-lg px-3 py-2" />
+                </div>
+                <div>
+                  <label className="text-sm text-slate-700 dark:text-slate-300">City</label>
+                  <input value={editForm.city} onChange={(e) => setEditForm({ ...editForm, city: e.target.value })} className="w-full border rounded-lg px-3 py-2" />
+                </div>
+                <div>
+                  <label className="text-sm text-slate-700 dark:text-slate-300">State</label>
+                  <input value={editForm.state} onChange={(e) => setEditForm({ ...editForm, state: e.target.value })} className="w-full border rounded-lg px-3 py-2" />
+                </div>
+                <div>
+                  <label className="text-sm text-slate-700 dark:text-slate-300">Country</label>
+                  <input value={editForm.country} onChange={(e) => setEditForm({ ...editForm, country: e.target.value })} className="w-full border rounded-lg px-3 py-2" />
+                </div>
+                <div>
+                  <label className="text-sm text-slate-700 dark:text-slate-300">Postal Code</label>
+                  <input value={editForm.postal_code} onChange={(e) => setEditForm({ ...editForm, postal_code: e.target.value })} className="w-full border rounded-lg px-3 py-2" />
+                </div>
+              </div>
+
+              <label className="text-sm text-slate-700 dark:text-slate-300 mt-2">Bio</label>
+              <textarea value={editForm.bio} onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })} className="border rounded-lg px-3 py-2" />
+
+              <label className="text-sm text-slate-700 dark:text-slate-300">Avatar</label>
+              <div className="flex items-center gap-3">
+                <input type="file" accept="image/*" onChange={(e) => handleAvatarUpload(e.target.files?.[0])} />
+                {uploading && <span className="text-sm text-slate-500">Uploading...</span>}
+              </div>
+              {editForm.avatar_url && (
+                <img src={editForm.avatar_url} alt="avatar" className="w-20 h-20 rounded-full object-cover" />
+              )}
+
+              <div className="flex justify-end gap-3 mt-4">
+                <button onClick={() => setIsEditing(false)} className="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200">Cancel</button>
+                <button onClick={saveProfile} className="px-4 py-2 rounded-lg bg-green-500 hover:bg-green-600 text-white">Save</button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
     <section className="w-[90vw] mx-auto mt-8">
@@ -151,14 +307,24 @@ const UserDashboard = () => {
             <p><strong>Description:</strong> {product.description || "No description provided."}</p>
           </div>
 
-          {/* View Details Button */}
+          {/* View Details + Delete Button */}
           <div className="p-4 border-t border-gray-100 dark:border-slate-700">
-            <button
-              onClick={() => window.location.href = `/product-details/${product.id}`}
-              className="w-full bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors duration-200"
-            >
-              View Details
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => window.location.href = `/product-details/${product.id}`}
+                className="flex-1 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors duration-200"
+              >
+                View Details
+              </button>
+              {String(product.user_id) === String(localStorage.getItem("user_id")) && (
+                <button
+                  onClick={() => requestDelete(product.id)}
+                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors duration-200"
+                >
+                  Delete
+                </button>
+              )}
+            </div>
           </div>
         </div>
       ))}

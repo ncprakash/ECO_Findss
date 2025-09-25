@@ -1,4 +1,10 @@
-// socket.js
-import { io } from "socket.io-client";
+import { io } from 'socket.io-client';
 
-export const socket = io("http://localhost:3000");
+const URL = process.env.NODE_ENV === 'production' 
+  ? undefined 
+  : 'http://localhost:3000';
+
+export const socket = io(URL, {
+  autoConnect: true,
+  withCredentials: true
+});

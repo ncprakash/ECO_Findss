@@ -13,6 +13,8 @@ import Verification from './Pages/VerificationPage/index.jsx';
 import PrivateRoute from './layouts/PrivateRoute.jsx'
 import UserDashboard from './Pages/userDashboard/index.jsx' 
 import Community from './Pages/Communitypage/CommunityPage'
+import ChatDebugger from './components/ChatDebugger'
+import ChatRoom from './Pages/ChatRoom/index.jsx'
 
 function App() {
   return (
@@ -28,6 +30,8 @@ function App() {
         <Route path='/add-product' element={<AddNewProduct/>} />
         <Route path='/verify' element={<Verification/>} />
         <Route path="/product-details/:id" element={<ProductDetails />} />
+        <Route path='/chat-debug' element={<ChatDebugger />} />
+        <Route path='/chat/:roomId' element={<ChatRoom />} />
 
         <Route path='/user-dashboard' element={<PrivateRoute><UserDashboard/></PrivateRoute>} />  
       </Routes>

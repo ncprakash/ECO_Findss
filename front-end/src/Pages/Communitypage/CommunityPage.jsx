@@ -21,6 +21,7 @@ export default function Community() {
       }
       
       const res = await axios.get("/api/post");
+      console.log(res.data);
       setPosts(res.data);
       setError("");
       
@@ -75,7 +76,7 @@ export default function Community() {
             
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-gray-900 truncate">
-                {post.username || "Anonymous User"}
+                {post?.username }
               </h3>
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 <span>{new Date(post.created_at || Date.now()).toLocaleDateString()}</span>
