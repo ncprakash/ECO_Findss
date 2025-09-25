@@ -8,7 +8,9 @@ const UserDashboard = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [friends, setFriends] = useState(0);
+  const [friendList, setFriendList] = useState([]);
   const [ecoPoints, setEcoPoints] = useState(0);
+  const [ecoHistory, setEcoHistory] = useState([]);
   const [myPosts, setMyPosts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -36,8 +38,21 @@ const UserDashboard = () => {
 
       setUser(res.data.user);
       setFriends(res.data.user.friends_count);
-      setEcoPoints(res.data.user.eco_points);
+      // Points summary
+      try {
+        const eco = await axios.get('/api/ecopoints', { headers: { Authorization: `Bearer ${token}` } });
+        setEcoPoints(eco.data.points || 0);
+      } catch {
+        setEcoPoints(res.data.user.eco_points || 0);
+      }
       setMyPosts(res.data.products || []); // assuming backend returns products/posts
+      // Fetch friends
+      const friendsRes = await axios.get('/api/friends', { headers: { Authorization: `Bearer ${token}` } });
+      setFriendList(friendsRes.data.friends || []);
+
+      // Fetch eco history
+      const ecoTx = await axios.get('/api/ecopoints/transactions?limit=10', { headers: { Authorization: `Bearer ${token}` } });
+      setEcoHistory(ecoTx.data.transactions || []);
     } catch (err) {
       toast.error(err.response?.data?.error || "Something went wrong");
     } finally {
@@ -193,6 +208,83 @@ const UserDashboard = () => {
         </section>
       )}
 
+      {/* Friends Section */}
+      <section className="w-[90vw] mx-auto mt-8">
+        <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-6">Friends</h2>
+        {friendList.length === 0 ? (
+          <div className="text-center text-gray-500 py-10">No friends yet</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {friendList.map((f) => (
+              <div key={f.id} className="bg-white dark:bg-slate-800 rounded-2xl shadow p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <img src={f.avatar_url || '/default-avatar.png'} alt={f.username} className="w-10 h-10 rounded-full object-cover" />
+                  <div>
+                    <p className="font-semibold text-slate-900 dark:text-white">{f.username}</p>
+                    <p className="text-xs text-slate-500">{f.email}</p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => navigate(`/chat/${[localStorage.getItem('user_id'), String(f.id)].sort().join('_')}`)} className="px-3 py-1 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-sm">Chat</button>
+                  <button onClick={async () => {
+                    const token = localStorage.getItem('token');
+                    try {
+                      await axios.delete(`/api/friends/${f.id}`, { headers: { Authorization: `Bearer ${token}` } });
+                      setFriendList((prev) => prev.filter((x) => x.id !== f.id));
+                      toast.success('Removed friend');
+                    } catch (err) {
+                      toast.error('Failed to remove friend');
+                    }
+                  }} className="px-3 py-1 rounded-lg bg-red-500 hover:bg-red-600 text-white text-sm">Remove</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Eco Points Section - improved visuals */}
+      <section className="w-[90vw] mx-auto mt-8">
+        <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-6 shadow text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm opacity-90">Total Eco Points</p>
+              <p className="text-4xl font-extrabold mt-1">{ecoPoints}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm opacity-90">This Month</p>
+              <p className="text-xl font-bold">+{ecoHistory.filter(h => new Date(h.created_at).getMonth() === new Date().getMonth()).reduce((a,c)=>a+(c.points||0),0)}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 bg-white dark:bg-slate-800 rounded-2xl shadow">
+          <div className="px-5 py-3 border-b dark:border-slate-700 flex items-center justify-between">
+            <h3 className="font-semibold text-slate-900 dark:text-white">Recent Activity</h3>
+            <span className="text-xs text-slate-500">Last 10</span>
+          </div>
+          {ecoHistory.length === 0 ? (
+            <div className="text-center text-gray-500 py-10">No recent activity</div>
+          ) : (
+            <ul className="divide-y dark:divide-slate-700">
+              {ecoHistory.map((t) => (
+                <li key={t.id} className="flex items-center justify-between p-4">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-9 h-9 rounded-full flex items-center justify-center ${t.points >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      {t.points >= 0 ? '+' : '-'}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-slate-900 dark:text-white capitalize">{t.action.replace(/_/g,' ')}</p>
+                      <p className="text-xs text-slate-500">{new Date(t.created_at).toLocaleString()}</p>
+                    </div>
+                  </div>
+                  <div className={`text-base font-bold ${t.points >= 0 ? 'text-green-600' : 'text-red-600'}`}>{t.points}</div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </section>
       {isEditing && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-slate-800 p-6 rounded-xl w-full max-w-lg shadow-2xl">

@@ -38,7 +38,10 @@ router.post("/products", async (req, res) => {
   } = req.body;
 
   try {
-    const result = await pool.query(
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      const result = await client.query(
       `INSERT INTO products (
         user_id, image_url, title, category, description, price, quantity, condition,
         year_of_manufacture, brand, model, dimensions, weight, material, color,
@@ -48,14 +51,42 @@ router.post("/products", async (req, res) => {
         $9, $10, $11, $12, $13, $14, $15,
         $16, $17, $18
       ) RETURNING *`,
-      [
+        [
         user_id, image_url, title, category, description, price, quantity, condition,
         year_of_manufacture, brand, model, dimensions, weight, material, color,
         original_packaging, manual_included, working_condition_desc
-      ]
-    );
+        ]
+      );
 
-    res.json(result.rows[0]);
+      // Award eco points (+10) and record transaction via existing route logic (inline)
+      // Ensure tables exist and upsert points
+      await client.query(
+        "INSERT INTO eco_points (user_id, points) VALUES ($1,$2) ON CONFLICT (user_id) DO UPDATE SET points = eco_points.points + EXCLUDED.points",
+        [user_id, 10]
+      );
+      await client.query(
+        `CREATE TABLE IF NOT EXISTS eco_transactions (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          points INTEGER NOT NULL,
+          action TEXT NOT NULL,
+          metadata JSONB DEFAULT '{}'::jsonb,
+          created_at TIMESTAMPTZ DEFAULT NOW()
+        )`
+      );
+      await client.query(
+        `INSERT INTO eco_transactions (user_id, points, action, metadata) VALUES ($1,$2,$3,$4)`,
+        [user_id, 10, 'post_created', { product_id: result.rows[0].id }]
+      );
+
+      await client.query('COMMIT');
+      res.json(result.rows[0]);
+    } catch (e) {
+      await client.query('ROLLBACK');
+      throw e;
+    } finally {
+      client.release();
+    }
   } catch (err) {
     console.error("❌ Error creating product:", err.message);
     res.status(500).json({ error: "Internal server error" });

@@ -173,8 +173,9 @@ const AddNewProduct = () => {
         productData
       );
   
-      // ✅ Step 4: Success message
+      // ✅ Step 4: Success messages
       toast.success("✅ Product listed successfully!");
+      toast.success("🌱 Eco points increased by +10", { duration: 4000 });
   
       // ✅ Reset form
       setFormData({

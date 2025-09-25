@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FaBars, FaShoppingCart, FaUserCircle } from "react-icons/fa";
-import { Link } from "react-router-dom"; // use next/link if using Next.js
+import { Link, NavLink, useLocation } from "react-router-dom"; // use next/link if using Next.js
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -16,7 +16,7 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="flex items-center justify-between p-4 bg-white shadow-md sticky top-0 z-50">
+    <nav className="flex items-center justify-between p-4 bg-white text-white shadow-md sticky top-0 z-50">
       {/* Left: Logo + Hamburger */}
       <div className="flex items-center gap-4">
         <button
@@ -25,32 +25,34 @@ export default function Navbar() {
         >
           <FaBars />
         </button>
-        <Link to='/'><img src="./public/images.jpg" alt="Logo" className="w-12 h-12" /></Link>
+        <Link to='/'><img src="./public/images.jpg" alt="Logo" className="w-12 h-12 rounded" /></Link>
       </div>
 
       {/* Desktop menu */}
-      <div className="hidden md:flex items-center gap-4">
+      <div className="hidden md:flex items-center gap-2">
         {pages.map((page) => (
-          <Link
+          <NavLink
             key={page.name}
             to={page.path}
-            className="hover:text-blue-500 transition"
+            className={({ isActive }) =>
+              `px-3 py-1 rounded-lg transition ${isActive ? 'bg-white text-green-700 font-semibold' : 'text-green-400 hover:bg-white/10'}`
+            }
           >
             {page.name}
-          </Link>
+          </NavLink>
         ))}
       </div>
 
       {/* Right: Cart + User */}
       <div className="flex items-center gap-4">
         <div className="relative">
-          <FaShoppingCart className="text-xl" />
-          <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full px-2 text-xs">
+          <FaShoppingCart className="text-xl text-green-400" />
+          <span className="absolute -top-2 -right-2 bg-white text-green-700 rounded-full px-2 text-xs">
             1
           </span>
         </div>
         <Link to='/user-dashboard'>
-          <FaUserCircle className="text-2xl" />
+          <FaUserCircle className="text-4xl text-green-400" />
         </Link>
       </div>
 
@@ -58,14 +60,16 @@ export default function Navbar() {
       {isMenuOpen && (
         <div className="absolute top-full left-0 w-full bg-white shadow-md md:hidden flex flex-col gap-2 p-4">
           {pages.map((page) => (
-            <Link
+            <NavLink
               key={page.name}
               to={page.path}
-              className="hover:text-blue-500 transition"
-              onClick={() => setIsMenuOpen(false)} // close menu after click
+              className={({ isActive }) =>
+                `px-3 py-2 rounded-lg transition ${isActive ? 'bg-green-50 text-green-700 font-semibold' : 'text-slate-800 hover:bg-slate-50'}`
+              }
+              onClick={() => setIsMenuOpen(false)}
             >
               {page.name}
-            </Link>
+            </NavLink>
           ))}
         </div>
       )}

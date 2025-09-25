@@ -10,6 +10,7 @@ import userDashboard from "./routes/userDashboard.js";
 import cloud from "./routes/cloudinary.js";
 import posts from "./routes/communityPost.js"
 import productDetails from "./routes/productDetail.js"
+import friends from "./routes/friends.js"
 const app = express();
 import http from "http";
 import setupChat from "./routes/chatting.js";
@@ -33,6 +34,7 @@ app.use("/api",cloud)
 app.use("/api", userDashboard)
 app.use("/api",posts);
 app.use('/api',productDetails)
+app.use('/api', friends)
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
